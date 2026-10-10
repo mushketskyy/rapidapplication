@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Конструктор BB-кода</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f4f4f9; color: #333; }
+        .toolbar { margin-bottom: 10px; }
+        .toolbar button { padding: 8px 12px; margin-right: 5px; cursor: pointer; background: #fff; border: 1px solid #ccc; border-radius: 4px; }
+        .toolbar button:hover { background: #e0e0e0; }
+        .container { display: flex; gap: 20px; }
+        textarea, .preview { width: 50%; height: 400px; padding: 15px; border-radius: 6px; border: 1px solid #ccc; box-sizing: border-box; }
+        textarea { font-family: monospace; font-size: 14px; resize: none; }
+        .preview { background: #fff; overflow-y: auto; border-left: 4px solid #007acc; }
+        h3 { margin-top: 0; }
+    </style>
+</head>
+<body>
+
+    <h2>Конструктор BB-кода</h2>
+    
+    <div class="toolbar">
+        <button onclick="insertTag('b')"><b>B</b></button>
+        <button onclick="insertTag('i')"><i>I</i></button>
+        <button onclick="insertTag('u')"><u>U</u></button>
+        <button onclick="insertTag('code')">Код</button>
+        <button onclick="insertTag('img', 'http://url-картинки.jpg')">Картинка</button>
+    </div>
+
+    <div class="container">
+        <textarea id="editor" placeholder="Введите ваш текст с BB-кодами здесь..." oninput="updatePreview()">Привет, это [b]полужирный[/b] и [i]курсивный[/i] текст!</textarea>
+        <div class="preview" id="preview"></div>
+    </div>
+
+    <script>
+        // Функция вставки тегов по кнопке
+        function insertTag(tag, val = '') {
+            const textarea = document.getElementById('editor');
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const text = textarea.value;
+            const selected = text.substring(start, end);
+            
+            let replacement = `[${tag}]${selected || val}[/${tag}]`;
+            textarea.value = text.substring(0, start) + replacement + text.substring(end);
+            
+            updatePreview();
+            textarea.focus();
+        }
+
+        // Простейший регулярный парсер BB-кода в HTML
+        function parseBBCode(text) {
+            return text
+                .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;") // Защита от XSS
+                .replace(/\[b\](.*?)\[\/b\]/gi, '<strong>\$1</strong>')
+                .replace(/\[i\](.*?)\[\/i\]/gi, '<em>\$1</em>')
+                .replace(/\[u\](.*?)\[\/u\]/gi, '<u>\$1</u>')
+                .replace(/\[code\](.*?)\[\/code\]/gi, '<pre><code>\$1</code></pre>')
+                .replace(/\[img\](.*?)\[\/img\]/gi, '<img src="\$1" style="max-width:100%;">')
+                .replace(/\n/g, '<br>'); // Переносы строк
+        }
+
+        // Обновление окна предпросмотра
+        function updatePreview() {
+            const code = document.getElementById('editor').value;
+            document.getElementById('preview').innerHTML = parseBBCode(code);
+        }
+
+        // Запуск при первой загрузке
+        updatePreview();
+    </script>
+</body>
+</html>
